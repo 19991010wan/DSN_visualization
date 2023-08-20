@@ -1,0 +1,139 @@
+var nodes = {{ nodes | tojson}};
+    // var degrees = {{ degrees | tojson }}
+    // var communities = {{ communities | tojson}}
+    var links_source = {{ links_source | tojson }};
+    var links_target = {{ links_target | tojson }};
+    console.log(nodes, degrees, communities)
+
+    // var Nodes = [];
+    var nodeDegrees = {};
+    var nodeCategories = {}; // 存储节点的类别信息
+
+    for (var i = 0; i < nodes.length; i++) {
+        Nodes.push({
+            name: nodes[i],
+            symbolSize: degrees[nodes[i]], // 初始化节点的默认大小
+            category: communities[nodes[i]] // 初始化节点的类别
+        });
+
+        // nodeDegrees[nodes[i]] = 0; // 初始化节点的度为0
+    }
+
+    console.log(Nodes)
+    // console.log(links_source, links_target)
+    var links = []
+    for (var j = 0; j < links_source.length; j++) {
+        var source = links_source[j];
+        var target = links_target[j];
+
+        links.push({source: source, target: target});
+    }
+    console.log(links);
+    //
+    var maxDegree = 0;
+    Object.values(degrees).forEach(function (degree) {
+        if (degree > maxDegree) {
+            maxDegree = degree;
+        }
+    });
+    //
+    // 对节点的度进行对数缩放
+    var scaleFactor = 5; // 调整缩放的比例因子
+    // 设置节点的类别
+    Nodes.forEach(function (node) {
+        var nodeName = node.name;
+        // 将节点的度作为节点大小
+        var nodeDegree = degreess[nodeName];
+        var scaledSize = Math.log(nodeDegree + 1) * scaleFactor;
+        node.symbolSize = scaledSize;
+    });
+    //
+    // // 获取节点所属的社区
+    // function getCommunity(nodeName) {
+    //     // 在这里根据节点名称获取节点所属的社区信息，可以根据实际情况自定义实现
+    //     // 返回一个表示社区的标识符，例如字符串或数字
+    //     // 如果节点之间存在社区关系的数据，可以使用该数据进行社区的划分
+    //     // 这里假设节点名称中包含社区标识符，例如节点名为 "Node1_communityA"
+    //     // 那么社区信息可以从节点名称中提取
+    //     var communityPattern = /_([^_]+)$/; // 使用正则表达式提取最后一个下划线后的内容作为社区标识符
+    //     var match = communityPattern.exec(nodeName);
+    //     if (match) {
+    //         return match[1]; // 返回提取到的社区标识符
+    //     } else {
+    //         return 'Unknown'; // 如果无法提取到社区信息，将节点归为未知类别
+    //     }
+    // }
+    //
+    // // 生成节点类别对应的颜色
+    // var categoryColors = generateCategoryColors(Object.keys(nodeCategories).length);
+    //
+    // // 设置节点类别的颜色
+    // Nodes.forEach(function (node) {
+    //     var nodeCategory = node.category;
+    //     node.itemStyle = {
+    //         color: categoryColors[nodeCategory]
+    //     };
+    // });
+    // console.log(Nodes)
+    //
+    // // 生成节点类别对应的颜色
+    // function generateCategoryColors(categoryCount) {
+    //     // 这里可以根据实际需求自定义节点类别的颜色生成方式
+    //     // 例如使用一个预定义的颜色数组，或者根据类别数量动态生成颜色
+    //     // 这里使用 HSL 色彩空间生成均匀分布的颜色
+    //     var colors = [];
+    //     var hueStep = 360 / categoryCount;
+    //     for (var i = 0; i < categoryCount; i++) {
+    //         var hue = i * hueStep;
+    //         var color = 'hsl(' + hue + ', 70%, 50%)';
+    //         colors.push(color);
+    //     }
+    //     return colors;
+    // }
+
+
+
+
+    // // 这里根据你的需求构建网络图的数据
+    //
+    //使用ECharts绘制网络图
+    var chart = echarts.init(document.getElementById('network-chart'));
+    var option = {
+        // 这里是ECharts的配置项，根据你的网络图数据进行配置
+        title: {
+            text: 'Network Graph',
+            subtext: 'Default layout',
+            top: 'top',
+            left: 'center'
+        },
+        tooltip: {},
+        animationDurationUpdate: 1500,
+        animationEasingUpdate: 'quinticInOut',
+        series: [
+            {
+                type: 'graph',
+                layout: 'force',
+                data: Nodes,
+                links: links,
+                emphasis: {
+                    focus: 'adjacency',
+                    lineStyle: {
+                        width: 3
+                    }
+                },
+                roam: true,
+                label: {
+                    normal: {
+                        position: 'right',
+                        formatter: '{b}'
+                    }
+                },
+                lineStyle: {
+                    normal: {
+                        curveness: 0.3
+                    }
+                }
+            }
+        ]
+    };
+    chart.setOption(option, true);
