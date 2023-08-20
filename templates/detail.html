@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ project_value }} DSN Visualization</title>
+    <script src="https://cdn.bootcss.com/echarts/4.2.1-rc1/echarts.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        h2 {
+            color: #333;
+        }
+
+        p {
+            font-weight: bold;
+        }
+
+        #chart-container {
+            position: relative;
+            height: 100vh;
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+<h2>{{ project_value }} DSN</h2>
+<div id="network-chart" style="width: 800px; height: 600px;"></div>
+<p>DSN size: {{ data['DSN size'] }}</p>
+<p>DSN density: {{ data['DSN density'] }}</p>
+<p>DSN bridges: {{ data['DSN bridges'] }}</p>
+<p>Avg_degree_centrality: {{ data['Avg_degree_centrality'] }}</p>
+<!--<p>sponsor: {{ data['sponsor'] }}</p>-->
+<!--<p>Avg experience: {{ data['Avg experience'] }}</p>-->
+
+<p><a href="/">Back to Home</a></p>
+
+
+</body>
+<script type="text/javascript">
+    // 使用项目属性值和网络边数据构建网络图
+    // var projectValue = "{{ project_value }}";
+    // console.log(projectValue)
+    // console.log({{ nodes | tojson }})
+    // var Nodes = eval([+ {{ Nodes | tojson }} })
+    // console.log(Nodes)
+    var nodes = {{ nodes | tojson}};
+    // var degrees = {{ degrees | tojson }}
+    // var communities = {{ communities | tojson}}
+    var links_source = {{ links_source | tojson }};
+    var links_target = {{ links_target | tojson }};
+    console.log(nodes)
+
+    var Nodes = [];
+    var nodeDegrees = {};
+    // var nodeCategories = {}; // 存储节点的类别信息
+
+    for (var i = 0; i < nodes.length; i++) {
+        Nodes.push({
+            name: nodes[i],
+            symbolSize: '', // 初始化节点的默认大小
+        });
+
+        nodeDegrees[nodes[i]] = 0; // 初始化节点的度为0
+    }
+
+    console.log(Nodes)
+    // console.log(links_source, links_target)
+    var links = []
+    for (var j = 0; j < links_source.length; j++) {
+        var source = links_source[j];
+        var target = links_target[j];
+
+        links.push({source: source, target: target});
+    }
+    console.log(links);
+    //
+    var maxDegree = 0;
+    Object.values(degrees).forEach(function (degree) {
+        if (degree > maxDegree) {
+            maxDegree = degree;
+        }
+    });
+    //
+    // 对节点的度进行对数缩放
+    var scaleFactor = 5; // 调整缩放的比例因子
+    // 设置节点的类别
+    Nodes.forEach(function (node) {
+        var nodeName = node.name;
+        // 将节点的度作为节点大小
+        var nodeDegree = degreess[nodeName];
+        var scaledSize = Math.log(nodeDegree + 1) * scaleFactor;
+        node.symbolSize = scaledSize;
+    });
+
+
+
+
+    // // 这里根据你的需求构建网络图的数据
+    //
+    //使用ECharts绘制网络图
+    var chart = echarts.init(document.getElementById('network-chart'));
+    var option = {
+        // 这里是ECharts的配置项，根据你的网络图数据进行配置
+        title: {
+            text: 'Network Graph',
+            subtext: 'Default layout',
+            top: 'top',
+            left: 'center'
+        },
+        tooltip: {},
+        animationDurationUpdate: 1500,
+        animationEasingUpdate: 'quinticInOut',
+        series: [
+            {
+                type: 'graph',
+                layout: 'force',
+                data: Nodes,
+                links: links,
+                emphasis: {
+                    focus: 'adjacency',
+                    lineStyle: {
+                        width: 3
+                    }
+                },
+                roam: true,
+                label: {
+                    normal: {
+                        position: 'right',
+                        formatter: '{b}'
+                    }
+                },
+                lineStyle: {
+                    normal: {
+                        curveness: 0.3
+                    }
+                }
+            }
+        ]
+    };
+    chart.setOption(option, true);
+</script>
+</html>

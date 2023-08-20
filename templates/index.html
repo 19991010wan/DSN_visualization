@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>DSN Visualization</title>
+    <script src="https://cdn.bootcss.com/echarts/4.2.1-rc1/echarts.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="../static/css/index.css">
+    <link href="../static/css/layui.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        h1 {
+            color: #333;
+            font-size: 28px;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 20px;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        table th, table td {
+            border: 1px solid #ccc;
+            padding: 8px;
+            text-align: left;
+        }
+
+        table th {
+            background-color: #f2f2f2;
+        }
+
+        table tr:hover {
+            background-color: #f9f9f9;
+            cursor: pointer;
+        }
+
+        #r {
+            font-size: 24px;
+            position: relative;
+            display: inline-block;
+        }
+
+        #superscript {
+            position: absolute;
+            top: -0.7em;
+            right: -0.3em;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+
+
+<h1>DSN Visualization</h1>
+<table>
+    <thead>
+    <tr>
+        <th>Project</th>
+        <th>NewC</th>
+        <th>DSN size</th>
+        <th>DSN density</th>
+        <th>DSN bridges</th>
+        <th>Avg_degree_centrality</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for row in data %}
+    <tr onclick="location.href='/details/{{ loop.index }}'">
+        <td>{{ row.Project }}</td>
+        <td>{{ row['NewC'] }}</td>
+        <td>{{ row['DSN size'] }}</td>
+        <td>{{ row['DSN density'] }}</td>
+        <td>{{ row['DSN bridges'] }}</td>
+        <td>{{ row['Avg_degree_centrality'] }}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+<div class="chart-row">
+  <div id="chart_DSN_size" style="width: 600px; height: 400px;"></div>
+  <div id="chart_DSN_density" style="width: 600px; height: 400px;"></div>
+</div>
+<div class="chart-row">
+  <div id="chart_DSN_bridge" style="width: 600px; height: 400px;"></div>
+<!--  <div id="chart_DSN_k_stars" style="width: 600px; height: 400px;"></div>-->
+  <div id="chart_DSN_avg_degree" style="width: 600px; height: 400px;"></div>
+</div>
+
+<table>
+
+    <thead>
+    <tr>
+        <th></th>
+        <th>Model<sub>1</sub></th>
+        <th>Model<sub>2</sub></th>
+        <th>Model<sub>3</sub></th>
+        <th>Model<sub>4</sub></th>
+        <th>Model<sub>5</sub></th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr>
+        <td>Intercept</td>
+        <td>{{ regression_list[0][0][0] }} {{ regression_list[0][1][0] }}</td>
+        <td>{{ regression_list[1][0][0] }} {{ regression_list[1][1][0] }}</td>
+        <td>{{ regression_list[2][0][0] }} {{ regression_list[2][1][0] }}</td>
+        <td>{{ regression_list[3][0][0] }} {{ regression_list[3][1][0] }}</td>
+        <td>{{ regression_list[4][0][0] }} {{ regression_list[4][1][0] }}</td>
+    </tr>
+    <tr>
+        <td>DSN size</td>
+        <td>{{ regression_list[0][0][1] }} {{ regression_list[0][1][1] }}</td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td>{{ regression_list[4][0][1] }} {{ regression_list[4][1][1] }}</td>
+    </tr>
+    <tr>
+        <td>DSN density</td>
+        <td></td>
+        <td>{{ regression_list[1][0][1] }} {{ regression_list[1][1][1] }}</td>
+        <td></td>
+        <td></td>
+        <td>{{ regression_list[4][0][2] }} {{ regression_list[4][1][2] }}</td>
+    </tr>
+    <tr>
+        <td>DSN bridges</td>
+        <td></td>
+        <td></td>
+        <td>{{ regression_list[2][0][1] }} {{ regression_list[2][1][1] }}</td>
+        <td></td>
+        <td>{{ regression_list[4][0][3] }} {{ regression_list[4][1][3]}}</td>
+    </tr>
+    <tr>
+        <td>Avg_degree_centrality</td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td>{{ regression_list[3][0][1] }} {{ regression_list[3][1][1] }}</td>
+        <td>{{ regression_list[4][0][4] }} {{ regression_list[4][1][4] }}</td>
+    </tr>
+    <tr>
+        <td><span id="r">R<sup id="superscript">2</sup></span></td>
+        <td>{{ regression_list[0][2] }}</td>
+        <td>{{ regression_list[1][2] }}</td>
+        <td>{{ regression_list[2][2] }}</td>
+        <td>{{ regression_list[3][2] }}</td>
+        <td>{{ regression_list[4][2] }}</td>
+    </tr>
+    <tr>
+        <td><span id="r">Adjusted R<sup id="superscript">2</sup></span></td>
+        <td>{{ regression_list[0][3] }}</td>
+        <td>{{ regression_list[1][3] }}</td>
+        <td>{{ regression_list[2][3] }}</td>
+        <td>{{ regression_list[3][3] }}</td>
+        <td>{{ regression_list[4][3] }}</td>
+    </tr>
+    <tr>
+        <td>F-statistic</td>
+        <td>{{ regression_list[0][4] }}</td>
+        <td>{{ regression_list[1][4] }}</td>
+        <td>{{ regression_list[2][4] }}</td>
+        <td>{{ regression_list[3][4] }}</td>
+        <td>{{ regression_list[4][4] }}</td>
+    </tr>
+    </tbody>
+
+</table>
+
+
+</body>
+<script src="../static/js/layui.js"></script>
+<script src="../static/js/charts.js"></script>
+<script>
+    var DSN_size = {{ DSN_features[0] | tojson | safe }};
+    console.log(DSN_size)
+    var DSN_density = {{ DSN_features[1] | tojson | safe }};
+    var DSN_bridge = {{ DSN_features[2] | tojson | safe }};
+    var min_max = getMinandMax(DSN_bridge)
+    console.log(min_max)
+    var DSN_avg_degree = {{ DSN_features[3] | tojson | safe }};
+
+    var ranges_DSN_size = [[0, 500], [500, 1000], [1000, 1500], [1500, 2000], [2000, 2500], [2500, 3000], [3000, 3500], [3500, 4000], [4000, 4500]];
+    var ranges_DSN_density = [[0.00001, 0.00005], [0.00005, 0.0001], [0.0001, 0.0005], [0.0005, 0.001], [0.001, 0.005], [0.005, 0.01], [0.01, 0.05]];
+    var ranges_DSN_bridge = [[0, 50], [50, 100], [100, 150], [150, 200], [200, 250], [250, 300], [300, 350], [350, 400], [400, 450], [450, 500]];
+    var ranges_DSN_avg_degree = [[0.001, 0.005], [0.005, 0.01], [0.01, 0.05], [0.05, 0.1], [0.1, 0.5]];
+
+    // // 定义图表数据和范围数组
+    // var chartData = [
+    //   { chartId: 'chart_DSN_size', data: DSN_size, ranges: ranges_DSN_size, chartstype: 'distributionchart' },
+    //   { chartId: 'chart_DSN_density', data: DSN_density, ranges: ranges_DSN_density, chartstype: 'distributionchart' },
+    //   { chartId: 'chart_DSN_bridge', data: DSN_bridge, ranges: ranges_DSN_bridge, chartstype: 'distributionchart' },
+    //   { chartId: 'chart_DSN_avg_degree', data: DSN_avg_degree, ranges: ranges_DSN_avg_degree, chartstype: 'distributionchart' },
+    // ];
+    //
+    // // 循环创建图表和配置
+    // chartData.forEach(function(chartItem) {
+    //   var chart = echarts.init(document.getElementById(chartItem.chartId));
+    //   var options = buildCharts(chartItem.chartstype, chartItem.data, chartItem.ranges);
+    //   chart.setOption(options);
+    // });
+
+    // 定义图表数据和范围数组
+    var chartData = [
+      { chartId: 'chart_DSN_size', data: DSN_size, ranges: ranges_DSN_size },
+      { chartId: 'chart_DSN_density', data: DSN_density, ranges: ranges_DSN_density },
+      { chartId: 'chart_DSN_bridge', data: DSN_bridge, ranges: ranges_DSN_bridge },
+      { chartId: 'chart_DSN_avg_degree', data: DSN_avg_degree, ranges: ranges_DSN_avg_degree },
+    ];
+
+    // 循环创建图表和配置
+    chartData.forEach(function(chartItem) {
+      var chart = echarts.init(document.getElementById(chartItem.chartId));
+      var options = buildcolordistributionChart(chartItem.data, chartItem.ranges);
+      chart.setOption(options);
+    });
+
+</script>
+</html>
